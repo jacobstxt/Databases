@@ -1,0 +1,2 @@
+Підключення до бд:
+docker exec -it course-postgres psql -U student -d coursedb
