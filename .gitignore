@@ -1,0 +1,48 @@
+# ---------- Documents and reports ----------
+*.pdf
+*.doc
+*.docx
+*.dotx
+*.ppt
+*.pptx
+*.xls
+*.xlsx
+*.odt
+*.zip
+*.rar
+*.7z
+
+# Screenshots for reports
+*.png
+*.jpg
+*.jpeg
+
+# Word temp files
+~$*
+
+# ---------- .NET / Visual Studio ----------
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userprefs
+*.rsuser
+*.log
+
+# Local debug profile (contains the DB_CONNECTION environment variable)
+**/Properties/launchSettings.json
+
+# Local secrets and configs
+.env
+appsettings.Development.json
+appsettings.Local.json
+
+# ---------- OS files ----------
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ---------- Editors ----------
+.idea/
+.vscode/
