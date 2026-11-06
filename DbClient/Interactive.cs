@@ -6,15 +6,12 @@ namespace DbClient;
 
 public static class Interactive
 {
-    // Only these statement types can be executed from the console.
     private static readonly string[] AllowedStatements = { "SELECT", "INSERT", "UPDATE", "DELETE" };
 
-    // Finds placeholders like @id or @name (ignores '::' casts and '@@').
     private static readonly Regex ParamRegex =
         new(@"(?<![\w@:])@([A-Za-z_]\w*)", RegexOptions.Compiled);
 
-    // Reads an SQL query from the user, validates it, asks for parameter values
-    // and executes it. All user values go ONLY through query parameters.
+    // Main function
     public static void RunCustomQuery(NpgsqlConnection conn)
     {
         Console.WriteLine("Enter one SQL query (SELECT / INSERT / UPDATE / DELETE).");
@@ -23,15 +20,14 @@ public static class Interactive
         Console.Write("SQL> ");
         var input = Console.ReadLine();
 
-        // Step 1: local validation before touching the database.
+        // Step 1
         var error = Validate(input, out var sql, out var kind);
         if (error != null)
         {
             Console.WriteLine($"Invalid query: {error}");
             return;
         }
-
-        // Step 2: collect values for every placeholder found in the query.
+        // Step 2
         var names = ParamRegex.Matches(sql).Select(m => m.Groups[1].Value).Distinct().ToList();
         var values = new Dictionary<string, string?>();
         foreach (var name in names)
@@ -41,8 +37,7 @@ public static class Interactive
             values[name] = value.Trim().Equals("NULL", StringComparison.OrdinalIgnoreCase) ? null : value;
         }
 
-        // Step 3: execute inside a transaction.
-        // If anything fails, the transaction is rolled back when it is disposed.
+        // Step 3
         try
         {
             using var tx = conn.BeginTransaction();
@@ -50,8 +45,6 @@ public static class Interactive
 
             foreach (var (name, value) in values)
             {
-                // NpgsqlDbType.Unknown lets PostgreSQL infer the real column type
-                // (int, date, text...), so "5" works for an integer column.
                 cmd.Parameters.Add(new NpgsqlParameter(name, NpgsqlDbType.Unknown)
                 {
                     Value = value is null ? DBNull.Value : value
@@ -101,7 +94,7 @@ public static class Interactive
         }
     }
 
-    // Checks the query text. Returns an error message or null if the query is acceptable.
+    
     private static string? Validate(string? input, out string sql, out string kind)
     {
         sql = "";
@@ -127,7 +120,7 @@ public static class Interactive
         return null;
     }
 
-    // Turns a PostgreSQL error into a clear message for the user.
+    // Function that return clear error for user
     private static string Explain(PostgresException ex) => ex.SqlState switch
     {
         "42601" => $"Syntax error in the query (position {ex.Position}): {ex.MessageText}",
@@ -142,7 +135,7 @@ public static class Interactive
         _ => $"Database error [{ex.SqlState}]: {ex.MessageText}"
     };
 
-    // Prints the result set as a table. Returns the number of rows printed.
+    // Function that prints the result set as a table. Returns the number of rows printed.
     private static int PrintRows(NpgsqlDataReader reader)
     {
         const int maxRows = 100;
